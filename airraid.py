@@ -24,6 +24,7 @@ def get_files_with_extension(location: str, extension: str) -> Set[str]:
 def leave():
 	pygame.display.quit()
 	pygame.quit()
+	exit()
 
 
 def random_airship_image() -> pygame.Surface:
