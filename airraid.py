@@ -285,9 +285,11 @@ score = 0
 
 while 0 < health: # main loop
 	start_time = time()
+	airship_list = [i for i in objects if isinstance(i, Airship)]
 	# render
 	screen.fill((0, 128, 255))
-	for obj in objects:
+	sorted_objects = airship_list + [i for i in objects if not isinstance(i, Airship)]
+	for obj in sorted_objects:
 		obj.render()
 	game_text('Score: {}\nHP: {}'.format(score, health), (0, 0), 24)
 	refresh()
@@ -313,7 +315,7 @@ while 0 < health: # main loop
 	for obj in {i for i in objects}:
 		obj.tick()
 	# spawn new airships at random left side
-	if len([i for i in objects if isinstance(i, Airship)]) < 4:
+	if len(airship_list) < 4:
 		objects.add(Airship(random_airship_image(), random_left_pixel()))
 	# todo airships damage you at right side
 	remaining_time = 1/target_fps - (time() - start_time)
