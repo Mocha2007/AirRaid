@@ -193,7 +193,7 @@ class Airship:
 
 	def render(self):
 		screen.blit(self.image, self.position)
-		# todo HP
+		# HP
 		x, y = self.position
 		y += self.image.get_height()
 		game_text('HP: {}/{}'.format(self.health, self.max_health), (x, y))
@@ -317,7 +317,7 @@ while 0 < health: # main loop
 	# spawn new airships at random left side
 	if len(airship_list) < 4:
 		objects.add(Airship(random_airship_image(), random_left_pixel()))
-	# todo airships damage you at right side
+	# airships damage you at right side
 	remaining_time = 1/target_fps - (time() - start_time)
 	if 0 < remaining_time:
 		sleep(remaining_time)
