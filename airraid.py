@@ -181,9 +181,8 @@ class Airship:
 		global score
 		self.health -= damage
 		if self.health <= 0:
-			objects.remove(self)
 			score += self.max_health
-			del self
+			self.die()
 
 	def includes(self, coords: (int, int)) -> bool:
 		x, y = coords
