@@ -194,6 +194,7 @@ target_fps = 30
 airship_damage = 10
 airship_health = 100
 airship_speed = 1
+artillery_timeout = .3
 shell_damage = 10
 shell_speed = 10
 # touch these idgaf
@@ -204,6 +205,7 @@ pygame.mixer.music.play(-1)
 pygame.mixer.set_num_channels(16)
 screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE) # type: pygame.Surface
 
+current_timeout = 0
 objects = set()
 paused = False
 score = 0
@@ -225,11 +227,12 @@ while 1: # main loop
 				leave()
 			elif event.key == pygame.K_p:
 				paused = not paused
-		elif event.type == pygame.MOUSEBUTTONDOWN:
-			# create new shell (from random bottom px) aimed at mouseclick
-			objects.add(Shell(random_bottom_pixel(), pygame.mouse.get_pos(), shell_damage, shell_speed))
 		elif event.type == pygame.VIDEORESIZE:
 			pygame.display.set_mode(event.size, pygame.RESIZABLE)
+	# fire!
+	if pygame.mouse.get_pressed()[0] and not current_timeout:
+		objects.add(Shell(random_bottom_pixel(), pygame.mouse.get_pos(), shell_damage, shell_speed))
+		current_timeout = artillery_timeout
 	# only do next ones if unpaused
 	if paused:
 		continue
@@ -243,3 +246,9 @@ while 1: # main loop
 	remaining_time = 1/target_fps - (time() - start_time)
 	if 0 < remaining_time:
 		sleep(remaining_time)
+	# fire timeout
+	if current_timeout:
+		if 1/target_fps < current_timeout:
+			current_timeout -= 1/target_fps
+		else:
+			current_timeout = 0
