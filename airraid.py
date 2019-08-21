@@ -117,7 +117,6 @@ class Shell:
 
 	def render(self):
 		pygame.draw.aaline(screen, black, self.pos_in(-1), self.position)
-		refresh()
 
 	def tick(self):
 		if self.dist < self.speed:
@@ -130,10 +129,9 @@ class Shell:
 
 
 class Airship:
-	def __init__(self, image: pygame.Surface, source: (int, int), damage: int):
+	def __init__(self, image: pygame.Surface, source: (int, int)):
 		self.image = image
 		self.position = source
-		self.damage = damage
 		self.health = self.max_health
 
 	# properties
@@ -141,6 +139,10 @@ class Airship:
 	def area(self) -> int:
 		x, y = self.image.get_size()
 		return x*y
+
+	@property
+	def damage(self) -> int:
+		return self.area // 50
 
 	@property
 	def max_health(self) -> int:
@@ -209,8 +211,6 @@ font = {
 refresh = pygame.display.flip
 target_fps = 30
 
-airship_damage = 10
-airship_health = 100
 artillery_timeout = .3
 shell_damage = 10
 shell_speed = 10
@@ -258,7 +258,7 @@ while 1: # main loop
 		obj.tick()
 	# spawn new airships at random left side
 	if len([i for i in objects if isinstance(i, Airship)]) < 4:
-		objects.add(Airship(random_airship_image(), random_left_pixel(), airship_damage))
+		objects.add(Airship(random_airship_image(), random_left_pixel()))
 	# todo airships damage you at right side
 	remaining_time = 1/target_fps - (time() - start_time)
 	if 0 < remaining_time:
