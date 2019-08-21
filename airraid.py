@@ -41,7 +41,7 @@ def random_bottom_pixel() -> (int, int):
 
 def random_left_pixel() -> (int, int):
 	x = 0
-	y = randint(0, screen.get_height())
+	y = randint(0, screen.get_height()-100)
 	return x, y
 
 
@@ -206,7 +206,7 @@ pygame.mixer.set_num_channels(16)
 screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE) # type: pygame.Surface
 
 current_timeout = 0
-objects = set()
+objects = set() # type: set
 paused = False
 score = 0
 
