@@ -6,6 +6,17 @@ import os
 import pygame
 
 
+def fire_artillery():
+	objects.add(Shell(random_bottom_pixel(), fuzz_position(pygame.mouse.get_pos()), shell_damage, shell_speed))
+
+
+def fuzz_position(pos: (int, int), amt: int = 10) -> (int, int):
+	x, y = pos
+	x += randint(-amt, amt)
+	y += randint(-amt, amt)
+	return x, y
+
+
 def game_text(text: str, coords: (int, int) = (0, 0)):
 	myfont = pygame.font.SysFont(font['family'], font['size'])
 	textsurface = myfont.render(text, True, (0, 0, 0))
@@ -231,7 +242,7 @@ while 1: # main loop
 			pygame.display.set_mode(event.size, pygame.RESIZABLE)
 	# fire!
 	if pygame.mouse.get_pressed()[0] and not current_timeout:
-		objects.add(Shell(random_bottom_pixel(), pygame.mouse.get_pos(), shell_damage, shell_speed))
+		fire_artillery()
 		current_timeout = artillery_timeout
 	# only do next ones if unpaused
 	if paused:
