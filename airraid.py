@@ -256,7 +256,7 @@ objects = set() # type: set
 paused = False
 score = 0
 
-while 1: # main loop
+while 0 < health: # main loop
 	start_time = time()
 	# render
 	screen.fill((0, 128, 255))
@@ -298,3 +298,5 @@ while 1: # main loop
 			current_timeout -= 1/target_fps
 		else:
 			current_timeout = 0
+print('Thank you for playing AirRaid by Mocha!\nFinal Score: {}'.format(score))
+input()
