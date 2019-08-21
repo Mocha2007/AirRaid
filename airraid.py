@@ -167,12 +167,12 @@ class Airship:
 		return 4000 / self.area * max(.5, self.health / self.max_health)
 
 	# methods
-	def die(self, damage: bool = True):
+	def die(self, kill_type: str = 'kill'):
 		global health
 		objects.remove(self)
-		if damage:
+		if kill_type == 'win':
 			health -= self.damage
-		else:
+		elif kill_type == 'crash':
 			objects.add(Burst(self.center))
 			sfx('crash')
 		del self
@@ -182,7 +182,7 @@ class Airship:
 		self.health -= damage
 		if self.health <= 0:
 			score += self.max_health
-			self.die(False)
+			self.die()
 
 	def includes(self, coords: (int, int)) -> bool:
 		x, y = coords
@@ -205,10 +205,10 @@ class Airship:
 		self.position = x, y
 		# did it win?
 		if screen.get_width() < self.position[0]:
-			self.die()
+			self.die('won')
 		# did it fall?
 		elif screen.get_height() < self.center[1]:
-			self.die(False)
+			self.die('crash')
 
 
 class Burst:
