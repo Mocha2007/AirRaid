@@ -10,7 +10,7 @@ def fire_artillery():
 	objects.add(Shell(random_bottom_pixel(), fuzz_position(pygame.mouse.get_pos()), shell_damage, shell_speed))
 
 
-def fuzz_position(pos: (int, int), amt: int = 10) -> (int, int):
+def fuzz_position(pos: (int, int), amt: int = 50) -> (int, int):
 	x, y = pos
 	x += randint(-amt, amt)
 	y += randint(-amt, amt)
@@ -77,6 +77,23 @@ class Shell:
 
 	# properties
 	@property
+	def burst_corners(self) -> ((int, int), (int, int), (int, int), (int, int)):
+		ulhc = self.position[0] - self.burst_radius, self.position[1] - self.burst_radius
+		urhc = self.position[0] + self.burst_radius, self.position[1] - self.burst_radius
+		blhc = self.position[0] - self.burst_radius, self.position[1] + self.burst_radius
+		brhc = self.position[0] + self.burst_radius, self.position[1] + self.burst_radius
+		return ulhc, urhc, blhc, brhc
+
+	@property
+	def burst_radius(self) -> int:
+		r = 0
+		v = burst_radius_velocity
+		while 0 < v:
+			r += v
+			v -= burst_radius_deceleration
+		return r
+
+	@property
 	def damage(self) -> int:
 		return round(uniform(.5, 1.5) * self.base_damage)
 
@@ -108,8 +125,12 @@ class Shell:
 	# methods
 	def detonate(self):
 		for airship in {i for i in objects if isinstance(i, Airship)}:
+			# direct hit
 			if airship.includes(self.position):
 				airship.hit(self.damage)
+			# indirect hit
+			elif any(airship.includes(i) for i in self.burst_corners):
+				airship.hit(self.damage//2)
 		objects.remove(self)
 		objects.add(Burst(self.position))
 		sfx('burst')
@@ -215,7 +236,7 @@ class Burst:
 	def __init__(self, position: (int, int)):
 		self.position = position
 		self.radius = 0
-		self.radius_velocity = 10
+		self.radius_velocity = burst_radius_velocity
 		self.t = 0
 
 	@property
@@ -252,7 +273,7 @@ class Burst:
 	def tick(self):
 		self.radius += self.radius_velocity
 		if self.radius_velocity:
-			self.radius_velocity -= 5
+			self.radius_velocity -= burst_radius_deceleration
 		self.t += 1
 		if self.radius < 0:
 			objects.remove(self)
@@ -266,6 +287,8 @@ refresh = pygame.display.flip
 target_fps = 30
 
 artillery_timeout = .3
+burst_radius_deceleration = 5
+burst_radius_velocity = 10
 shell_damage = 10
 shell_speed = 10
 # touch these idgaf
