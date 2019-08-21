@@ -216,17 +216,44 @@ class Burst:
 	def __init__(self, position: (int, int)):
 		self.position = position
 		self.radius = 0
-		self.radius_velocity = 5
+		self.radius_velocity = 10
 		self.t = 0
 
+	@property
+	def alpha(self) -> int:
+		return max(0, 255 - self.t * 255 // (2 * target_fps)) # 60 frames = 2 sec
+
+	@property
+	def color(self) -> (int, int, int):
+		# goal: white -> yellow -> orange -> red -> black
+		colors = [ # need TWELVE keys
+			(255, 255, 255), # white
+			(255, 255, 128),
+			(255, 255, 0), # yellow
+			(255, 192, 0),
+			(255, 128, 0), # orange
+			(255, 64, 0),
+			(255, 0, 0), # red
+			(192, 0, 0),
+			(128, 0, 0), # dark red
+			(64, 0, 0),
+		]
+		# return 255, 255 - 255//11 * self.t, max(0, 255 - 255//5 * self.t)
+		return colors[self.t] if self.t < len(colors) - 1 else black
+
 	def render(self):
-		# goal: white -> yellow -> orange -> red
-		color = 255, 255 - 255//11 * self.t, max(0, 255 - 255//5 * self.t)
-		pygame.draw.circle(screen, color, self.position, self.radius)
+		# pygame.draw.circle(screen, self.color, self.position, self.radius)
+		burst_surface = pygame.Surface((self.radius*2,)*2, pygame.SRCALPHA)
+		pygame.draw.circle(burst_surface, self.color+(self.alpha,), (self.radius,)*2, self.radius)
+		x, y = self.position
+		x -= self.radius
+		y -= self.radius
+		screen.blit(burst_surface, (x, y))
 
 	def tick(self):
 		self.radius += self.radius_velocity
-		self.radius_velocity -= 1
+		if self.radius_velocity:
+			self.radius_velocity -= 5
 		self.t += 1
 		if self.radius < 0:
 			objects.remove(self)
