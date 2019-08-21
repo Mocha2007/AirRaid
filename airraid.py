@@ -18,9 +18,13 @@ def fuzz_position(pos: (int, int), amt: int = 10) -> (int, int):
 
 
 def game_text(text: str, coords: (int, int) = (0, 0), size: int = 12):
+	text = text.replace('\t', ' '*4)
 	myfont = pygame.font.SysFont('Consolas', size)
-	textsurface = myfont.render(text, True, (0, 0, 0))
-	screen.blit(textsurface, coords)
+	for i, line in enumerate(text.split('\n')):
+		textsurface = myfont.render(line, True, white)
+		x, y = coords
+		y += i*size
+		screen.blit(textsurface, (x, y))
 
 
 def get_files_with_extension(location: str, extension: str) -> Set[str]:
@@ -145,6 +149,12 @@ class Airship:
 		return x*y
 
 	@property
+	def center(self) -> (int, int):
+		x, y = self.position
+		w, h = self.image.get_size()
+		return int(x + w//2), int(y + w//2)
+
+	@property
 	def damage(self) -> int:
 		return self.area // 50
 
@@ -157,6 +167,16 @@ class Airship:
 		return 4000 / self.area * max(.5, self.health / self.max_health)
 
 	# methods
+	def die(self, damage: bool = True):
+		global health
+		objects.remove(self)
+		if damage:
+			health -= self.damage
+		else:
+			objects.add(Burst(self.center))
+			sfx('crash')
+		del self
+
 	def hit(self, damage: int):
 		global score
 		self.health -= damage
@@ -181,11 +201,15 @@ class Airship:
 	def tick(self):
 		x, y = self.position
 		x += self.speed
+		if 3 * self.health < self.max_health:
+			y += 1
 		self.position = x, y
-		# todo check if over structure
+		# did it win?
 		if screen.get_width() < self.position[0]:
-			objects.remove(self)
-			del self
+			self.die()
+		# did it fall?
+		elif screen.get_height() < self.center[1]:
+			self.die(False)
 
 
 class Burst:
@@ -227,6 +251,7 @@ pygame.mixer.set_num_channels(16)
 screen = pygame.display.set_mode((1000, 500), pygame.RESIZABLE) # type: pygame.Surface
 
 current_timeout = 0
+health = 1000
 objects = set() # type: set
 paused = False
 score = 0
@@ -237,7 +262,7 @@ while 1: # main loop
 	screen.fill((0, 128, 255))
 	for obj in objects:
 		obj.render()
-	game_text(str(score), (0, 0), 20)
+	game_text('Score: {}\nHP: {}'.format(score, health), (0, 0), 24)
 	refresh()
 	# check for keypresses
 	for event in pygame.event.get():
