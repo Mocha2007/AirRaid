@@ -182,7 +182,7 @@ class Airship:
 		self.health -= damage
 		if self.health <= 0:
 			score += self.max_health
-			self.die()
+			self.die(False)
 
 	def includes(self, coords: (int, int)) -> bool:
 		x, y = coords
