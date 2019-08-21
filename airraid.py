@@ -154,7 +154,7 @@ class Airship:
 
 	@property
 	def speed(self) -> float:
-		return 5000 / self.area * max(.5, self.health / self.max_health)
+		return 4000 / self.area * max(.5, self.health / self.max_health)
 
 	# methods
 	def hit(self, damage: int):
