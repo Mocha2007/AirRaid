@@ -51,7 +51,7 @@ def random_bottom_pixel() -> (int, int):
 
 
 def random_left_pixel() -> (int, int):
-	x = 0
+	x = randint(-200, -100)
 	y = randint(0, screen.get_height()-100)
 	return x, y
 
@@ -130,18 +130,25 @@ class Shell:
 
 
 class Airship:
-	def __init__(self, image: pygame.Surface, source: (int, int), speed: int, damage: int):
+	def __init__(self, image: pygame.Surface, source: (int, int), damage: int):
 		self.image = image
 		self.position = source
-		self.speed = speed
 		self.damage = damage
 		self.health = self.max_health
 
 	# properties
 	@property
-	def max_health(self) -> int:
+	def area(self) -> int:
 		x, y = self.image.get_size()
-		return x*y//100
+		return x*y
+
+	@property
+	def max_health(self) -> int:
+		return self.area // 100
+
+	@property
+	def speed(self) -> float:
+		return 5000 / self.area * max(.5, self.health / self.max_health)
 
 	# methods
 	def hit(self, damage: int):
@@ -156,7 +163,7 @@ class Airship:
 		x, y = coords
 		xmin, ymin = self.position
 		xmax, ymax = xmin+self.image.get_width(), ymin+self.image.get_height()
-		return xmin <= x <= xmax and ymin <= y <= ymax
+		return xmin <= x <= xmax and y <= ymax
 
 	def render(self):
 		screen.blit(self.image, self.position)
@@ -204,7 +211,6 @@ target_fps = 30
 
 airship_damage = 10
 airship_health = 100
-airship_speed = 1
 artillery_timeout = .3
 shell_damage = 10
 shell_speed = 10
@@ -214,7 +220,7 @@ pygame.mixer.init()
 pygame.mixer.music.load('sfx/airraid.wav')
 pygame.mixer.music.play(-1)
 pygame.mixer.set_num_channels(16)
-screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE) # type: pygame.Surface
+screen = pygame.display.set_mode((1000, 500), pygame.RESIZABLE) # type: pygame.Surface
 
 current_timeout = 0
 objects = set() # type: set
@@ -252,7 +258,7 @@ while 1: # main loop
 		obj.tick()
 	# spawn new airships at random left side
 	if len([i for i in objects if isinstance(i, Airship)]) < 4:
-		objects.add(Airship(random_airship_image(), random_left_pixel(), airship_speed, airship_damage))
+		objects.add(Airship(random_airship_image(), random_left_pixel(), airship_damage))
 	# todo airships damage you at right side
 	remaining_time = 1/target_fps - (time() - start_time)
 	if 0 < remaining_time:
