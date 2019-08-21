@@ -1,5 +1,5 @@
 from math import atan2, cos, sin
-from random import choice, randint
+from random import choice, randint, uniform
 from time import sleep, time
 from typing import Set
 import os
@@ -17,8 +17,8 @@ def fuzz_position(pos: (int, int), amt: int = 10) -> (int, int):
 	return x, y
 
 
-def game_text(text: str, coords: (int, int) = (0, 0)):
-	myfont = pygame.font.SysFont(font['family'], font['size'])
+def game_text(text: str, coords: (int, int) = (0, 0), size: int = 12):
+	myfont = pygame.font.SysFont('Consolas', size)
 	textsurface = myfont.render(text, True, (0, 0, 0))
 	screen.blit(textsurface, coords)
 
@@ -65,13 +65,17 @@ def sfx(category: str):
 
 
 class Shell:
-	def __init__(self, source: (int, int), destination: (int, int), speed: int, damage: int):
+	def __init__(self, source: (int, int), destination: (int, int), speed: int, base_damage: int):
 		self.position = source
 		self.destination = destination
 		self.speed = speed
-		self.damage = damage
+		self.base_damage = base_damage
 
 	# properties
+	@property
+	def damage(self) -> int:
+		return round(uniform(.5, 1.5) * self.base_damage)
+
 	@property
 	def delta(self) -> (int, int):
 		return tuple(self.position[i] - self.destination[i] for i in range(2))
@@ -169,6 +173,10 @@ class Airship:
 
 	def render(self):
 		screen.blit(self.image, self.position)
+		# todo HP
+		x, y = self.position
+		y += self.image.get_height()
+		game_text('HP: {}/{}'.format(self.health, self.max_health), (x, y))
 
 	def tick(self):
 		x, y = self.position
@@ -204,10 +212,6 @@ class Burst:
 # do not touch these variables after game start
 black = (0,)*3
 white = (255,)*3
-font = {
-	'family': 'Consolas',
-	'size': 16,
-}
 refresh = pygame.display.flip
 target_fps = 30
 
@@ -233,7 +237,7 @@ while 1: # main loop
 	screen.fill((0, 128, 255))
 	for obj in objects:
 		obj.render()
-	game_text(str(score))
+	game_text(str(score), (0, 0), 20)
 	refresh()
 	# check for keypresses
 	for event in pygame.event.get():
