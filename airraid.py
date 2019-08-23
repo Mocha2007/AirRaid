@@ -131,13 +131,16 @@ class Shell:
 
 	# methods
 	def detonate(self):
+		accurate = False
 		for airship in {i for i in objects if isinstance(i, Airship)}:
 			# direct hit
 			if airship.includes(self.position):
 				airship.hit(self.damage)
+				accurate = True
 			# indirect hit
 			elif any(airship.includes(i) for i in self.burst_corners):
 				airship.hit(self.damage//2)
+		# accuracy.append(accurate)
 		objects.remove(self)
 		objects.add(Burst(self.position))
 		sfx('burst')
@@ -310,6 +313,7 @@ pygame.mixer.music.play(-1)
 pygame.mixer.set_num_channels(16)
 screen = pygame.display.set_mode((1000, 500), pygame.RESIZABLE) # type: pygame.Surface
 
+accuracy = []
 current_timeout = 0
 health = 1000
 objects = set() # type: set
@@ -326,7 +330,11 @@ while 0 < health: # main loop
 	sorted_objects = airship_list + [i for i in objects if not isinstance(i, Airship)]
 	for obj in sorted_objects:
 		obj.render()
-	game_text('Score: {}\nHP: {}\nLevel: {}'.format(score, health, max_airships), (0, 0), 24)
+	# game info
+	infostring = 'Score: {}\nHP: {}\nLevel: {}'.format(score, health, max_airships)
+	if accuracy:
+		infostring += '\nAccuracy: {}%'.format(round(100*sum(accuracy)/len(accuracy)))
+	game_text(infostring, (0, 0), 24)
 	refresh()
 	# check for keypresses
 	for event in pygame.event.get():
