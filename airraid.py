@@ -42,6 +42,13 @@ def leave():
 	exit()
 
 
+def progress_bar(fraction: float, coords: (int, int), width: int = 100, height: int = 4):
+	# red bg
+	pygame.draw.rect(screen, (255, 0, 0), coords+(width, height))
+	# green fg
+	pygame.draw.rect(screen, (0, 255, 0), coords+(int(fraction*width), height))
+
+
 def random_airship_image() -> pygame.Surface:
 	airship_image_filenames = get_files_with_extension('img/airship', 'png')
 	filename = choice(list(airship_image_filenames))
@@ -213,10 +220,14 @@ class Airship:
 
 	def render(self):
 		screen.blit(self.image, self.position)
-		# HP
 		x, y = self.position
+		# HP bar
 		y += self.image.get_height()
+		progress_bar(self.health/self.max_health, (x, y), self.image.get_width())
+		# HP
+		y += 4
 		game_text('HP: {}/{}'.format(self.health, self.max_health), (x, y))
+		# todo taunts
 
 	def tick(self):
 		x, y = self.position
