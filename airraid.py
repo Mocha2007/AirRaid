@@ -1,4 +1,4 @@
-from math import atan2, cos, sin
+from math import atan2, ceil, cos, sin
 from random import choice, randint, uniform
 from time import sleep, time
 from typing import Set
@@ -308,12 +308,13 @@ score = 0
 while 0 < health: # main loop
 	start_time = time()
 	airship_list = [i for i in objects if isinstance(i, Airship)]
+	max_airships = score**.5 / 10
 	# render
 	screen.fill((0, 128, 255))
 	sorted_objects = airship_list + [i for i in objects if not isinstance(i, Airship)]
 	for obj in sorted_objects:
 		obj.render()
-	game_text('Score: {}\nHP: {}'.format(score, health), (0, 0), 24)
+	game_text('Score: {}\nHP: {}\nLevel: {}'.format(score, health, ceil(max_airships)), (0, 0), 24)
 	refresh()
 	# check for keypresses
 	for event in pygame.event.get():
@@ -337,7 +338,7 @@ while 0 < health: # main loop
 	for obj in {i for i in objects}:
 		obj.tick()
 	# spawn new airships at random left side
-	if len(airship_list) < 4:
+	if len(airship_list) <= max_airships:
 		objects.add(Airship(random_airship_image(), random_left_pixel()))
 	# airships damage you at right side
 	remaining_time = 1/target_fps - (time() - start_time)
