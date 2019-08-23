@@ -306,6 +306,7 @@ paused = False
 score = 0
 
 while 0 < health: # main loop
+	# todo badges, upgrades
 	start_time = time()
 	airship_list = [i for i in objects if isinstance(i, Airship)]
 	max_airships = ceil(score**.5 / 10)
