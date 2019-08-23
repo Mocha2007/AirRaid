@@ -308,13 +308,13 @@ score = 0
 while 0 < health: # main loop
 	start_time = time()
 	airship_list = [i for i in objects if isinstance(i, Airship)]
-	max_airships = score**.5 / 10
+	max_airships = ceil(score**.5 / 10)
 	# render
 	screen.fill((0, 128, 255))
 	sorted_objects = airship_list + [i for i in objects if not isinstance(i, Airship)]
 	for obj in sorted_objects:
 		obj.render()
-	game_text('Score: {}\nHP: {}\nLevel: {}'.format(score, health, ceil(max_airships)), (0, 0), 24)
+	game_text('Score: {}\nHP: {}\nLevel: {}'.format(score, health, max_airships), (0, 0), 24)
 	refresh()
 	# check for keypresses
 	for event in pygame.event.get():
