@@ -226,7 +226,7 @@ class Airship:
 		self.position = x, y
 		# did it win?
 		if screen.get_width() < self.position[0]:
-			self.die('won')
+			self.die('win')
 		# did it fall?
 		elif screen.get_height() < self.center[1]:
 			self.die('crash')
