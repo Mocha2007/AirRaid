@@ -216,7 +216,7 @@ class Airship:
 		x, y = coords
 		xmin, ymin = self.position
 		xmax, ymax = xmin+self.image.get_width(), ymin+self.image.get_height()
-		return xmin <= x <= xmax and y <= ymax
+		return xmin <= x <= xmax and ymin <= y <= ymax
 
 	def render(self):
 		screen.blit(self.image, self.position)
