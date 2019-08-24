@@ -260,6 +260,20 @@ class Airship:
 			self.die('crash')
 
 
+class Bullet:
+	def __init__(self, source: (int, int), destination: (int, int)):
+		self.source = source
+		self.destination = destination
+
+	def render(self):
+		# yellow line from souce to dest
+		pygame.draw.line(screen, (255, 255, 0), self.source, self.destination)
+
+	def tick(self):
+		objects.remove(self)
+		del self
+
+
 class Burst:
 	def __init__(self, position: (int, int)):
 		self.position = position
@@ -353,8 +367,11 @@ class Soldier:
 		if self.cooldown:
 			self.cooldown -= 1
 			return
-		self.cooldown = 2 * target_fps
-		# todo render fire animation
+		self.cooldown = randint(target_fps, 2 * target_fps)
+		height = 3
+		source = self.x, screen.get_height() - height
+		destination = self.x + 50*(-1)**self.allied, screen.get_height() - height + randint(-5, 5)
+		objects.add(Bullet(source, destination))
 		if random() < 1/6: # accuracy - SWAG
 			target.hit(self.damage)
 
@@ -365,7 +382,6 @@ class Soldier:
 			nearest_enemy_soldier = min((i for i in enemy_soldiers), key=lambda i: abs(self.x - i.x))
 			distance = abs(self.x - nearest_enemy_soldier.x)
 			if distance <= 50:
-				# todo shoot
 				self.shoot(nearest_enemy_soldier)
 				return
 		# else move
