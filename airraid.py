@@ -1,5 +1,5 @@
 from math import atan2, ceil, cos, sin
-from random import choice, randint, uniform
+from random import choice, randint, random, uniform
 from time import sleep, time
 from typing import Set
 import os
@@ -44,7 +44,7 @@ def leave():
 
 def progress_bar(fraction: float, coords: (int, int), width: int = 100, height: int = 4):
 	# red bg
-	pygame.draw.rect(screen, (255, 0, 0), coords+(width, height))
+	pygame.draw.rect(screen, red, coords+(width, height))
 	# green fg
 	pygame.draw.rect(screen, (0, 255, 0), coords+(int(fraction*width), height))
 
@@ -73,6 +73,15 @@ def sfx(category: str):
 		pygame.mixer.find_channel().queue(pygame.mixer.Sound(filename))
 	except AttributeError:
 		pass
+
+
+def spawn_soldiers(x: int, amt: int, faction: bool = False, fuzzing: int = 10):
+	for _ in range(amt):
+		this_x = x + randint(-fuzzing, fuzzing)
+		objects.add(Soldier(this_x, faction))
+
+
+# todo class gameobject
 
 
 class Shell:
@@ -131,12 +140,12 @@ class Shell:
 
 	# methods
 	def detonate(self):
-		accurate = False
+		# accurate = False
 		for airship in {i for i in objects if isinstance(i, Airship)}:
 			# direct hit
 			if airship.includes(self.position):
 				airship.hit(self.damage)
-				accurate = True
+				# accurate = True
 			# indirect hit
 			elif any(airship.includes(i) for i in self.burst_corners):
 				airship.hit(self.damage//2)
@@ -186,6 +195,10 @@ class Airship:
 		return int(x + w//2), int(y + w//2)
 
 	@property
+	def crew(self) -> int:
+		return self.area // 150
+
+	@property
 	def damage(self) -> int:
 		return self.area // 50
 
@@ -206,6 +219,7 @@ class Airship:
 		elif kill_type == 'crash':
 			objects.add(Burst(self.center))
 			sfx('crash')
+			spawn_soldiers(self.position[0], self.crew)
 		del self
 
 	def hit(self, damage: int):
@@ -294,8 +308,73 @@ class Burst:
 			del self
 
 
+class Soldier:
+	def __init__(self, x: int, allied: bool = True):
+		self.x = x
+		self.allied = allied
+		self.max_health = 5
+		self.health = self.max_health
+		self.cooldown = 0 # ticks before they can shoot again
+		self.damage = 1
+
+	# methods
+	def die(self, kill_type: str = 'kill'):
+		global health
+		objects.remove(self)
+		if kill_type == 'win':
+			health -= self.damage
+		del self
+
+	def hit(self, damage: int):
+		global score
+		self.health -= damage
+		if self.health <= 0:
+			score += self.max_health
+			self.die()
+
+	def render(self):
+		# short vertical line, color = faction
+		x, y = self.x, screen.get_height()
+		color = black if self.allied else red
+		pygame.draw.line(screen, color, (x, y), (x, y-3))
+		# if cooldown, must be fighting. display home versus away.
+		if self.cooldown:
+			coords = self.x - 50*self.allied, screen.get_height() - 20
+			allied_count = len({i for i in objects if isinstance(i, Soldier) and i.allied})
+			enemy_count = len({i for i in objects if isinstance(i, Soldier) and not i.allied})
+			text = '{} vs. {}'.format(enemy_count, allied_count)
+			game_text(text, coords)
+
+	def shoot(self, target):
+		"""
+		:param target: the Soldier to shoot
+		:type target: Soldier
+		"""
+		if self.cooldown:
+			self.cooldown -= 1
+			return
+		self.cooldown = 2 * target_fps
+		# todo render fire animation
+		if random() < 1/6: # accuracy - SWAG
+			target.hit(self.damage)
+
+	def tick(self):
+		# if no enemy soldier within 50 px, move L/R depending on faction
+		enemy_soldiers = {i for i in objects if isinstance(i, Soldier) and i.allied != self.allied} # type: Set[Soldier]
+		if len(enemy_soldiers):
+			nearest_enemy_soldier = min((i for i in enemy_soldiers), key=lambda i: abs(self.x - i.x))
+			distance = abs(self.x - nearest_enemy_soldier.x)
+			if distance <= 50:
+				# todo shoot
+				self.shoot(nearest_enemy_soldier)
+				return
+		# else move
+		self.x += (-1) ** self.allied
+
+
 # do not touch these variables after game start
 black = (0,)*3
+red = 255, 0, 0
 white = (255,)*3
 refresh = pygame.display.flip
 target_fps = 30
@@ -311,7 +390,8 @@ pygame.mixer.init()
 pygame.mixer.music.load('sfx/airraid.wav')
 pygame.mixer.music.play(-1)
 pygame.mixer.set_num_channels(16)
-screen = pygame.display.set_mode((1000, 500), pygame.RESIZABLE) # type: pygame.Surface
+screen = pygame.display.set_mode((1000, 500)) # type: pygame.Surface
+# pygame.RESIZABLE
 
 accuracy = []
 current_timeout = 0
@@ -345,6 +425,8 @@ while 0 < health: # main loop
 				leave()
 			elif event.key == pygame.K_p:
 				paused = not paused
+			elif event.key == pygame.K_s:
+				spawn_soldiers(screen.get_width(), 10, True)
 		elif event.type == pygame.VIDEORESIZE:
 			pygame.display.set_mode(event.size, pygame.RESIZABLE)
 	# fire!
