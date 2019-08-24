@@ -219,7 +219,7 @@ class Airship:
 		elif kill_type == 'crash':
 			objects.add(Burst(self.center))
 			sfx('crash')
-			spawn_soldiers(self.position[0], self.crew)
+			spawn_soldiers(self.center[0], self.crew)
 		del self
 
 	def hit(self, damage: int):
