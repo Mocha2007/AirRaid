@@ -367,6 +367,7 @@ class Soldier:
 		if self.cooldown:
 			self.cooldown -= 1
 			return
+		# todo pew pew sfx
 		self.cooldown = randint(target_fps, 2 * target_fps)
 		height = 3
 		source = self.x, screen.get_height() - height
