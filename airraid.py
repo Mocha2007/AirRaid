@@ -267,7 +267,7 @@ class Bullet:
 
 	def render(self):
 		# yellow line from souce to dest
-		pygame.draw.line(screen, (255, 255, 0), self.source, self.destination)
+		pygame.draw.aaline(screen, (255, 255, 0), self.source, self.destination)
 
 	def tick(self):
 		objects.remove(self)
